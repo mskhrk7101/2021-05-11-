@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang='ja'>
+
+<head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='user-scalable=no,width=device-width,initial-scale=1'>
+    <title>ストップウォッチ</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+
+<body>
+    <div id='container'>
+        <div id='mask'>
+            <div id='lap'></div>
+        </div>
+        <div id='disp'>0:00:00.000 / 0:00:00.000</div>
+        <div class='button'>
+            <input type='button' id='start' value='START'>
+            <input type='button' id='reset' value='RESET'>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        "use strict";
+
+        const lapCount = 100;
+        let lapNum = 1;
+
+        const storage = getStorage();
+
+        let state = storage.state ?? 0,
+            startTime = storage.startTime ?? 0,
+            stopTime = storage.stopTime ?? 0,
+            lapTime = storage.lapTime ?? 0,
+            lapStopTime = storage.lapStopTime ?? 0,
+            id;
+        onload = function () {
+            if (state === 1) {
+                if (id = setInterval(printTime, 1)) {
+                    document.querySelector('#start').value = 'STOP';
+                    document.querySelector('#reset').value = 'LAP';
+                }
+                setStorage();
+            }
+        }
+
+        const eventHandlerType =
+            window.ontouchstart !== undefined ? 'touchstart' : 'mousedown';
+
+        // START押下時イベント
+        document.querySelector('#start').addEventListener(eventHandlerType, function () {
+            if (state === 0) {
+                // カウント開始
+                if (id = startCount()) {
+                    document.querySelector('#start').value = 'STOP';
+                    document.querySelector('#reset').value = 'LAP';
+                    state = 1;
+                    setStorage();
+                }
+            }
+            // 動作中
+            else {
+                // カウントインターバルが動作中
+                if (id) {
+                    // インターバル停止
+                    clearInterval(id);
+                    // カウント停止
+                    stopCount();
+                    // ボタンのラベルを戻す
+                    document.querySelector('#start').value = 'START';
+                    document.querySelector('#reset').value = 'RESET';
+                    // 動作状態を変更
+                    state = 0;
+                    deleteStorage();
+                }
+            }
+        }, false);
+
+        // RESET押下時イベント
+        document.querySelector('#reset').addEventListener(eventHandlerType, function () {
+            if (state === 0) {
+                stopTime = 0;
+                lapStopTime = 0;
+                document.querySelector('#lap').innerHTML = '';
+                document.querySelector('#disp').textContent = '0:00:00.000 / 0:00:00.000';
+            }
+            // 動作中ならLAP動作
+            else {
+                document.querySelector('#lap').appendChild(document.createElement("div"));
+                document.querySelector('#lap>div:last-of-type').textContent = (lapNum++) + ' : ' + getTimeString();
+
+                lapTime = Date.now();
+
+                if (document.querySelector('#lap').childElementCount > lapCount)
+                    document.querySelector('#lap').removeChild(document.querySelector('#lap').childNodes[0]);
+
+                document.querySelector('#lap').scrollTop = document.querySelector('#lap').scrollHeight;
+
+                setStorage();
+            }
+        }, false);
+
+        // カウント開始
+        function startCount() {
+            const now = Date.now();
+            startTime = now - stopTime;
+            lapTime = now - lapStopTime;
+            return setInterval(printTime, 1);
+        }
+
+        // カウント停止
+        function stopCount() {
+            const now = Date.now()
+            stopTime = now - startTime;
+            lapStopTime = now - lapTime;
+        }
+
+        // 経過時間表示
+        function printTime() {
+            document.querySelector('#disp').textContent = getTimeString();
+        }
+
+        function getTimeString() {
+            const
+                now = Date.now(),
+                time = now - startTime,
+                splitTime = now - lapTime,
+
+                main =
+                    Math.floor(time / 3600000) + ':' +
+                    String(Math.floor(time / 60000) % 60).padStart(2, '0') + ':' +
+                    String(Math.floor(time / 1000) % 60).padStart(2, '0') + '.' +
+                    String(time % 1000).padStart(3, '0'),
+
+                split =
+                    Math.floor(splitTime / 3600000) + ':' +
+                    String(Math.floor(splitTime / 60000) % 60).padStart(2, '0') + ':' +
+                    String(Math.floor(splitTime / 1000) % 60).padStart(2, '0') + '.' +
+                    String(splitTime % 1000).padStart(3, '0');
+
+            return main + ' / ' + split;
+        }
+
+        // localStorage保存
+        function setStorage() {
+            localStorage.setItem('stopwatch_params', JSON.stringify({
+                state: state,
+                startTime: startTime,
+                stopTime: stopTime,
+                lapTime: lapTime,
+                lapStopTime: lapStopTime,
+            }));
+        }
+
+        // localStorage削除
+        function deleteStorage() {
+            localStorage.removeItem('stopwatch_params');
+        }
+
+        // localStorage取得
+        function getStorage() {
+            const params = localStorage.getItem('stopwatch_params');
+            return params ? JSON.parse(params) : {};
+        }
+    </script>
+</body>
+
+</html>

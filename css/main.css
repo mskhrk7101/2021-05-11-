@@ -1,0 +1,54 @@
+    html {
+        touch-action: manipulation;
+        -webkit-touch-callout: none;
+        background-color:skyblue;
+    }
+    div.button {
+        box-sizing: border-box;
+        position: relative;
+        width: 100%;
+        text-align: center;
+    }
+    input[type='button'] {
+        width: 48%;
+        height: 50px;
+        max-width: 180px;
+        font-size: 25px;
+        border-radius: 8px;
+        background-color: #fff;
+        -webkit-appearance: none;
+        -webkit-userselect: none;
+        cursor: pointer;
+    }
+    div#disp {
+        position: relative;
+        text-align: center;
+        font-size: 50px;
+        margin-bottom: 20px;
+        -webkit-userselect: none;
+    }
+    div#lap {
+        position: relative;
+        text-align: center;
+        font-size: 18px;
+        height: 300px;
+        overflow-y: scroll;
+        width: 100%;
+        min-height: 200px;
+        margin-top: 60px;
+        margin-bottom: 10px;
+        left: 0px;
+    }
+    div#mask {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        margin: auto;
+    }
+    div#lap>div {
+        font-size: 40px;
+    }
+    #container {
+        width: 100%;
+        text-align: center;
+    }
